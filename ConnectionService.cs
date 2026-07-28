@@ -5,16 +5,15 @@ namespace BackupSystem
 {
     public class ConnectionService
     {
-        readonly ConnectionParameters _connectionParameters;
-        public ConnectionService(ConnectionParameters connectionParameters)
+        readonly string connectionString;
+        public ConnectionService(string _connectionString)
         {
-            this._connectionParameters = connectionParameters;
+            this.connectionString = _connectionString;
         }
 
         public bool CheckDbConnection()
         {
-            string connString = $"server={_connectionParameters.Host};Port={_connectionParameters.Port};database={_connectionParameters.DatabaseName};user={_connectionParameters.User};password={_connectionParameters.Password};";
-            using (MySqlConnection connCheck = new MySqlConnection(connString))
+            using (MySqlConnection connCheck = new MySqlConnection(connectionString))
 
             {
                 try

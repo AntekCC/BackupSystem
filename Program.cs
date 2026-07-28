@@ -5,7 +5,7 @@ using BackupSystem;
 
 Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL");
 int choice = int.Parse(Console.ReadLine());
-DatabaseType type = (DatabaseType)choice;
+DatabaseType databaseType = (DatabaseType)choice;
 
 Console.WriteLine("Enter database connection details:");
 Console.Write("Host: ");
@@ -24,8 +24,9 @@ Console.Write("Database name: ");
 string databaseName = Console.ReadLine();
 
 ConnectionParameters connectionParameters = new ConnectionParameters(host, port, user, password, databaseName);
-ConnectionStringBuilder connectionStringBuilder = new ConnectionStringBuilder(connectionParameters, type);
+ConnectionStringBuilder connectionStringBuilder = new ConnectionStringBuilder(connectionParameters, databaseType);
+var connectionString = connectionStringBuilder.GetConnectionString();
+ConnectionService connectionService = new ConnectionService(connectionString);
+Boolean isOpen = connectionService.CheckDbConnection();
 
-ConnectionService connectionService = new ConnectionService(connectionParameters);
-connectionService.CheckDbConnection();
 
