@@ -10,20 +10,23 @@ ConnectionStringBuilder connectionStringBuilder = new ConnectionStringBuilder(co
 var connectionString = connectionStringBuilder.GetConnectionString();
 ConnectionService connectionService = new ConnectionService(connectionString);
 Boolean isOpen = connectionService.CheckDbConnection();
-
 while (!isOpen)
 {
     Console.WriteLine("connection failed , check connection details");
-    var newConnectionParameters = ConnectionInput.getParameters();
-    connectionStringBuilder = new ConnectionStringBuilder(newConnectionParameters, databaseType);
-    connectionService = new ConnectionService(connectionStringBuilder.GetConnectionString());
+    connectionParameters = ConnectionInput.getParameters();
+    connectionStringBuilder = new ConnectionStringBuilder(connectionParameters, databaseType);
+    connectionString = connectionStringBuilder.GetConnectionString();
+    connectionService = new ConnectionService(connectionString);
     isOpen = connectionService.CheckDbConnection();
 
 }
+var backupPlan = BackupInput.GetBackupPlans();
+var backup = BackupFactory.GetBackupPlan(backupPlan);
+backup.ExecuteBackup(connectionString);
 
-Console.WriteLine("Choose backup plan\n(1) Full backup\n(2) Incremental backup\n(3) Differential backup");
-int choice2 = int.Parse(Console.ReadLine());
-BackupPlans backupPlans = (BackupPlans)choice2;
+
+
+
 
 
 

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BackupSystem
 {
-    public class ConnectionParameters
+    public class ConnectionParameters 
     {
         public readonly string Host;
         public readonly int Port;
