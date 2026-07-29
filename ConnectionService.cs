@@ -11,8 +11,11 @@ namespace BackupSystem
             this.connectionString = _connectionString;
         }
 
+
         public bool CheckDbConnection()
         {
+
+
             using (MySqlConnection connCheck = new MySqlConnection(connectionString))
 
             {
@@ -21,12 +24,11 @@ namespace BackupSystem
                     connCheck.Open();
                     return true;
                 }
-                catch (Exception e) 
-                { 
-                Console.WriteLine(e.ToString());
+                catch (MySqlException)
+                {
                     return false;
                 }
-               
+
             }
 
         }

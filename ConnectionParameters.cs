@@ -14,15 +14,16 @@ namespace BackupSystem
         public readonly string Password;
         public readonly string DatabaseName;
 
-        public ConnectionParameters(string _host, int _port, string _user, string _password, string _databaseName)
-        {
-            Host = _host;
-            Port = _port;
-            User = _user;
-            Password = _password;
-            DatabaseName = _databaseName;
 
+            public ConnectionParameters(string host, int port, string user, string password, string databaseName)
+        {
+            Host = host;
+            Port = port;
+            User = user;
+            Password = password;
+            DatabaseName = databaseName;
         }
+
 
     }
 }

@@ -13,6 +13,7 @@ namespace BackupSystem
             this.ConnectionParameters = _connectionParameters;
             this.databaseType = _databaseType;
         }
+        
         public string GetConnectionString()
         {
             switch (this.databaseType)
