@@ -1,8 +1,12 @@
 ﻿
+using System.Diagnostics;
+
 namespace BackupSystem
 {
     public interface IBackupStrategy
     {
-        void ExecuteBackup(string connectionString);
+        BackupMetrics ExecuteBackup(string connectionString);
+        
+
     }
 }
