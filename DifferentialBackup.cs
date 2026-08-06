@@ -3,7 +3,7 @@ namespace BackupSystem
 {
     public class DifferentialBackup : IBackupStrategy
     {
-        public BackupMetrics ExecuteBackup(string connectionString)
+        public BackupMetrics ExecuteBackup(ConnectionParameters connectionParameters, EnumDataBaseType databaseType,EnumBackupPlans backupPlans)
         {
             return null;
         }

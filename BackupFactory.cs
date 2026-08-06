@@ -6,15 +6,15 @@ namespace BackupSystem
     internal class BackupFactory
     {
 
-        public static IBackupStrategy GetBackupPlan(BackupPlans backupPlan)
+        public static IBackupStrategy GetBackupPlan(EnumBackupPlans backupPlan)
         {
             switch (backupPlan)
             {
-                case BackupPlans.fullBackup:
+                case EnumBackupPlans.fullBackup:
                     return new FullBackup();
-                case BackupPlans.incrementalBackup:
-                    break;
-                case BackupPlans.differentialBackup:
+                case EnumBackupPlans.incrementalBackup:
+                    return new IncrementalBackup();
+                case EnumBackupPlans.differentialBackup:
                     return new DifferentialBackup();
                 default:
 

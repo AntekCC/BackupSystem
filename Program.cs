@@ -1,10 +1,14 @@
 ﻿
 using BackupSystem;
+
+BackupLogger backupLogger = new BackupLogger();
+backupLogger.LoadLoggerState();
+
 while (true)
 {
-Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL");
+    Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL");
     int choice = int.Parse(Console.ReadLine());
-    DatabaseType databaseType = (DatabaseType)choice;
+    EnumDataBaseType databaseType = (EnumDataBaseType)choice;
     var connectionParameters = ConnectionInput.getParameters();
 
     ConnectionStringBuilder connectionStringBuilder = new ConnectionStringBuilder(connectionParameters, databaseType);
@@ -21,12 +25,23 @@ Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL")
         isOpen = connectionService.CheckDbConnection();
 
     }
-    var backupPlan = BackupInput.GetBackupPlans();
-    var backup = BackupFactory.GetBackupPlan(backupPlan);
-    BackupMetrics backupMetrics = backup.ExecuteBackup(connectionString);
-    BackupLogger backupLogger = new BackupLogger(backupMetrics, databaseType);
 
-    Console.WriteLine("siema"); 
+    var backupPlan = BackupInput.GetBackupPlans();
+    var loggedBackups = backupLogger.getBackupCount();
+    if (loggedBackups == 0)
+    {
+        Console.WriteLine("No previous backups found, performing full backup first");
+        backupPlan = EnumBackupPlans.fullBackup;
+    }
+
+    var backup = BackupFactory.GetBackupPlan(backupPlan);
+    BackupMetrics backupMetrics = backup.ExecuteBackup(connectionParameters, databaseType, backupPlan);
+    backupLogger.addBackupMetrics(backupMetrics, backupMetrics.BackupId);
+    backupLogger.saveLoggerState();
+
+
+
+    Console.WriteLine("siema");
 
 }
 

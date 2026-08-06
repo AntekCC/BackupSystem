@@ -1,16 +1,49 @@
 ﻿
 
+using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.BC;
+using System.Security.Cryptography.X509Certificates;
+
 namespace BackupSystem
 {
     public class BackupLogger
     {
-        private Dictionary<DatabaseType, BackupMetrics> BackupLogs = new Dictionary<DatabaseType, BackupMetrics>(); 
-        
-        public BackupLogger(BackupMetrics _backupMetrics,DatabaseType _databaseType)
+        private Dictionary<string, BackupMetrics> backups = new Dictionary<string, BackupMetrics>();
+
+
+        public void addBackupMetrics(BackupMetrics _backupMetrics, string id)
         {
-            BackupLogs.Add(_databaseType, _backupMetrics);
+            backups.Add(id, _backupMetrics);
         }
 
+        public void saveLoggerState()
+        {
+            string x = JsonConvert.SerializeObject(backups, Formatting.Indented);
+            string backupPath = @"D:\BackupLogger";
+            Directory.CreateDirectory(backupPath);
+            using (StreamWriter writer = new StreamWriter($@"{backupPath}\BackupLogger.json"))
+            {
+                writer.Write(x);
 
+            }
+
+        }
+        public void LoadLoggerState()
+        {
+            string backupPath = @"D:\BackupLogger\BackupLogger.json";
+            if (File.Exists(backupPath))
+            {
+                using (StreamReader reader = new StreamReader(backupPath))
+                {
+                    string json = reader.ReadToEnd();
+                    backups = JsonConvert.DeserializeObject<Dictionary<string, BackupMetrics>>(json);
+                }
+            }
+        }
+
+        public int getBackupCount()
+        {
+            return backups.Count;
+        }
     }
 }

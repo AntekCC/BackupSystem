@@ -5,7 +5,7 @@ namespace BackupSystem
 {
     public interface IBackupStrategy
     {
-        BackupMetrics ExecuteBackup(string connectionString);
+        BackupMetrics ExecuteBackup(ConnectionParameters connectionParameters,EnumDataBaseType DatabaseType, EnumBackupPlans BackupType);
         
 
     }

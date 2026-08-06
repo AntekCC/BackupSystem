@@ -10,6 +10,11 @@
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="9.7.0" />
     <PackageReference Include="MySqlBackup.NET" Version="2.7.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tools\" />
   </ItemGroup>
 
 </Project>
