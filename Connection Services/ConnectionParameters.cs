@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BackupSystem
 {
-    public class ConnectionParameters 
+    public class ConnectionParameters
     {
         public readonly string Host;
         public readonly int Port;
@@ -15,7 +15,7 @@ namespace BackupSystem
         public readonly string DatabaseName;
 
 
-            public ConnectionParameters(string host, int port, string user, string password, string databaseName)
+        public ConnectionParameters(string host, int port, string user, string password, string databaseName)
         {
             Host = host;
             Port = port;

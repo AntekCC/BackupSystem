@@ -1,11 +1,15 @@
 ﻿using bckp;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace BackupSystem
 {
-    public class FullBackup : IBackupStrategy
+    public static class FullMaria
     {
-        public BackupMetrics ExecuteBackup(ConnectionParameters _connectionParameters, EnumDataBaseType _databaseType ,EnumBackupPlans _backupType)
+        public static BackupMetrics FullMariaBackup(ConnectionParameters _connectionParameters, EnumDataBaseType _databaseType, EnumBackupPlans _backupType)
         {
             Process backup = new Process();
             string backupDate = DateTime.Now.ToString("yyyy-MM-dd");
@@ -28,7 +32,7 @@ namespace BackupSystem
             {
                 stopwatch.Stop();
                 Console.WriteLine($"Error:Failed to start the backup process.");
-                return new BackupMetrics(false, TimeSpan.Zero, _connectionParameters.DatabaseName, _databaseType, backupId, backupDate,_backupType);
+                return new BackupMetrics(false, TimeSpan.Zero, _connectionParameters.DatabaseName, _databaseType, backupId, backupDate, _backupType);
             }
             stopwatch.Stop();
             if (backup.ExitCode != 0)
@@ -37,8 +41,8 @@ namespace BackupSystem
                 return new BackupMetrics(false, TimeSpan.Zero, _connectionParameters.DatabaseName, _databaseType, backupId, backupDate, _backupType);
             }
             return new BackupMetrics(true, stopwatch.Elapsed, _connectionParameters.DatabaseName, _databaseType, backupId, backupDate, _backupType);
+
         }
 
     }
 }
-

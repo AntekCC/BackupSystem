@@ -23,7 +23,6 @@ while (true)
         connectionString = connectionStringBuilder.GetConnectionString();
         connectionService = new ConnectionService(connectionString);
         isOpen = connectionService.CheckDbConnection();
-
     }
 
     var backupPlan = BackupInput.GetBackupPlans();
@@ -33,8 +32,8 @@ while (true)
         Console.WriteLine("No previous backups found, performing full backup first");
         backupPlan = EnumBackupPlans.fullBackup;
     }
-
     var backup = BackupFactory.GetBackupPlan(backupPlan);
+
     BackupMetrics backupMetrics = backup.ExecuteBackup(connectionParameters, databaseType, backupPlan);
     backupLogger.addBackupMetrics(backupMetrics, backupMetrics.BackupId);
     backupLogger.saveLoggerState();
