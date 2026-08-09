@@ -4,15 +4,24 @@ using System.Text;
 
 namespace BackupSystem
 {
-    public static class  ConnectionInput
+    public static class ConnectionInput
     {
-        public static  ConnectionParameters getParameters()
+        public static ConnectionParameters getParameters()
         {
             Console.WriteLine("Enter database connection details:");
             Console.Write("Host: ");
             string Host = Console.ReadLine();
             Console.Write("Port: ");
-            int Port = int.Parse(Console.ReadLine());
+            int choice;
+            bool parse = int.TryParse(Console.ReadLine(), out choice);
+            while (!parse)
+            {
+                Console.WriteLine("port must be a number");
+                Console.Write("Port: ");
+                parse = int.TryParse(Console.ReadLine(), out choice);
+
+            }
+            int Port = choice;
             Console.Write("User: ");
             string User = Console.ReadLine();
             Console.Write("Password: ");

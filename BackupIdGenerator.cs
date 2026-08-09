@@ -10,11 +10,7 @@ namespace bckp
     {
         public static string generateId()
         {
-            Random rand = new Random();
-            string chars = "$%#@!*abcdefghijklmnopqrstuvwxyz1234567890?";
-            var generator = chars.ToList().Select(y => chars[rand.Next(0, chars.Count())]).Take(5).ToList();
-            var id = String.Join("", generator);
-            return id;
+            return Guid.NewGuid().ToString("N")[..8].ToString();
         }
     }
 }

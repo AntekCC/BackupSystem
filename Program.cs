@@ -1,14 +1,42 @@
 ﻿
 using BackupSystem;
+using BackupSystem.Enums;
 
-BackupLogger backupLogger = new BackupLogger();
-backupLogger.LoadLoggerState();
-
+string configFolder = Path.Combine(AppContext.BaseDirectory, "config");
+string configFilePath = Path.Combine(configFolder, "initialConfig.json");
+Directory.CreateDirectory(configFolder);
 while (true)
 {
+    InitialConfig initialConfig;
+    BackupLogger backupLogger = new BackupLogger();
+   
+    if (File.Exists(configFilePath))
+    {
+        initialConfig = backupLogger.LoadInitialConfiguration(configFilePath);
+    }
+    else
+    {
+        initialConfig = BackupInput.ConfigurationSetup(configFolder);
+        backupLogger.saveInitialConfiguration(initialConfig);
+    }
+    var backupsPath = initialConfig.GetBackupsPath();//path to the backups directory(all backups data)
+    var logsPath = initialConfig.GetLogsPath(); //path to the logs directory(all backups metadata)
+
+    backupLogger.LoadLoggerState(logsPath);
+    var loggedBackups = backupLogger.getBackupCount();
+
+
     Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL");
-    int choice = int.Parse(Console.ReadLine());
+    int choice;
+    bool parse = int.TryParse(Console.ReadLine(), out choice);
+    while (!parse)
+    {
+        Console.WriteLine("Select a number");
+        parse = int.TryParse(Console.ReadLine(), out choice);
+
+    }
     EnumDataBaseType databaseType = (EnumDataBaseType)choice;
+
     var connectionParameters = ConnectionInput.getParameters();
 
     ConnectionStringBuilder connectionStringBuilder = new ConnectionStringBuilder(connectionParameters, databaseType);
@@ -25,23 +53,33 @@ while (true)
         isOpen = connectionService.CheckDbConnection();
     }
 
-    var backupPlan = BackupInput.GetBackupPlans();
-    var loggedBackups = backupLogger.getBackupCount();
-    if (loggedBackups == 0)
+    var backupPlan = BackupInput.GetBackupStrategy();
+    var wrappedBackups = backupLogger.BackupLoggerWrapped();
+    if (loggedBackups == 0 && (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup))
     {
-        Console.WriteLine("No previous backups found, performing full backup first");
+        Console.WriteLine("No previous backups found, performing full backup first ");
         backupPlan = EnumBackupPlans.fullBackup;
     }
-    var backup = BackupFactory.GetBackupPlan(backupPlan);
+    var baseId = "";
+    if (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup)
+    {
+        baseId = BackupInput.RequestedBackupID(wrappedBackups);
+    }
 
-    BackupMetrics backupMetrics = backup.ExecuteBackup(connectionParameters, databaseType, backupPlan);
+
+    var backup = BackupFactory.GetBackupPlan(backupPlan, wrappedBackups, baseId);
+
+
+
+    BackupMetrics backupMetrics = backup.ExecuteBackup(connectionParameters, databaseType, backupPlan, backupsPath);
+
     backupLogger.addBackupMetrics(backupMetrics, backupMetrics.BackupId);
-    backupLogger.saveLoggerState();
+    backupLogger.saveLoggerState(logsPath);
 
 
-
-    Console.WriteLine("siema");
-
+    Console.WriteLine("===========================================");
+    Console.WriteLine($"If you want to change the paths where  program saves files, go to: {initialConfig.GetintialConfigFilePath()}, or delete the file to start new config setup");
+    Console.WriteLine("===========================================");
 }
 
 

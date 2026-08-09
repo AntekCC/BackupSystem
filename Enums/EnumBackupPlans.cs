@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BackupSystem
+namespace BackupSystem.Enums
 {
     public enum EnumBackupPlans
     {
