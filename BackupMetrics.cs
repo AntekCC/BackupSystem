@@ -15,9 +15,10 @@ namespace BackupSystem
         public string BackupDate { get; set; }
         public EnumBackupPlans BackupType { get; set; }
         public string path { get; set; }
+        public string baseId { get; set; }//for incremental /differental to know which base backup it is associated with , full backup will have  its own backupId as baseId
 
 
-        public BackupMetrics(bool _isSuccess, TimeSpan _timeTaken, string _databaseName, EnumDataBaseType _databaseType, string id_, string _backupDate, EnumBackupPlans _backupType, string _path)
+        public BackupMetrics(bool _isSuccess, TimeSpan _timeTaken, string _databaseName, EnumDataBaseType _databaseType, string id_, string _backupDate, EnumBackupPlans _backupType, string _path, string _baseId)
         {
             IsSuccess = _isSuccess;
             TimeTaken = _timeTaken;
@@ -27,6 +28,7 @@ namespace BackupSystem
             BackupDate = _backupDate;
             BackupType = _backupType;
             path = _path;
+            baseId = _baseId;
         }
 
 

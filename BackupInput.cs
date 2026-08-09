@@ -58,10 +58,14 @@ namespace BackupSystem
         public static string RequestedBackupID(ReadOnlyDictionary<string, BackupMetrics> _wrapped)
         {
             Console.WriteLine("");
-            Console.WriteLine("Most recent 10 backups (for reference only, you can enter any ID)");
+            Console.WriteLine("Most recent 10  successful backups (for reference only, you can enter any ID)");
             foreach (var key in _wrapped.Reverse().Take(10))
             {
-                Console.WriteLine($"| Backup ID: {key.Key}| Database Name: {key.Value.DatabaseName}| Backup Type: {key.Value.BackupType}| Backup Date: {key.Value.BackupDate} | Backup  completed: {key.Value.IsSuccess} |");
+                if (key.Value.IsSuccess)
+                {
+                    Console.WriteLine($"| Backup ID: {key.Key}| Database Name: {key.Value.DatabaseName}| Backup Type: {key.Value.BackupType}| Backup Date: {key.Value.BackupDate} | Backup  completed: {key.Value.IsSuccess} |");
+
+                }
             }
             Console.WriteLine("");
             Console.WriteLine("Enter the backup ID you want to use as the base for your incremental/differential backup.");

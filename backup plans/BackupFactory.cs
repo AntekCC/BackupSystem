@@ -14,10 +14,8 @@ namespace BackupSystem
             {
                 case EnumBackupPlans.fullBackup:
                     return new FullBackupService();
-                case EnumBackupPlans.incrementalBackup:
-                    return new IncrementalBackupService(BackupsWrapped, baseId);
-                case EnumBackupPlans.differentialBackup:
-                    return new DifferentialBackup();
+                case EnumBackupPlans.incrementalBackup or EnumBackupPlans.differentialBackup:
+                    return new DeltaBackupService(BackupsWrapped, baseId);
                 default:
 
                     throw new ArgumentException("invalid backup plan");

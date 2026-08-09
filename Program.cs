@@ -9,7 +9,7 @@ while (true)
 {
     InitialConfig initialConfig;
     BackupLogger backupLogger = new BackupLogger();
-   
+
     if (File.Exists(configFilePath))
     {
         initialConfig = backupLogger.LoadInitialConfiguration(configFilePath);
@@ -55,11 +55,14 @@ while (true)
 
     var backupPlan = BackupInput.GetBackupStrategy();
     var wrappedBackups = backupLogger.BackupLoggerWrapped();
-    if (loggedBackups == 0 && (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup))
+    var isAvaiable = backupLogger.isAvailable(connectionParameters.DatabaseName);
+
+    if ((loggedBackups == 0 && (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup)) || (isAvaiable == false))
     {
         Console.WriteLine("No previous backups found, performing full backup first ");
         backupPlan = EnumBackupPlans.fullBackup;
     }
+
     var baseId = "";
     if (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup)
     {

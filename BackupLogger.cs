@@ -2,7 +2,9 @@
 
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Contracts;
 using System.Security.Principal;
+using ZstdSharp.Unsafe;
 
 
 
@@ -14,7 +16,7 @@ namespace BackupSystem
 
         public void addBackupMetrics(BackupMetrics _backupMetrics, string id)
         {
-            backups.Add(id, _backupMetrics);
+            backups.Add($"{_backupMetrics.DatabaseName}_{id}", _backupMetrics);
         }
         public void saveLoggerState(string path)
         {
@@ -74,6 +76,19 @@ namespace BackupSystem
             }
             return null;
 
+        }
+        public  bool isAvailable(string dataBaseName) // If at least one successful full backup was performed with the specified name,
+                                                      // incremental and differential backups will be unlocked.
+        {
+            foreach (var backup in backups)
+            {
+                if (backup.Key.Contains($"{dataBaseName}")&& backup.Value.IsSuccess==true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
 
