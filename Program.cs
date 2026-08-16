@@ -1,15 +1,26 @@
 ﻿
 using BackupSystem;
 using BackupSystem.Enums;
+using System.Collections.ObjectModel;
 
 string configFolder = Path.Combine(AppContext.BaseDirectory, "config");
 string configFilePath = Path.Combine(configFolder, "initialConfig.json");
+InitialConfig initialConfig;
+BackupLogger backupLogger = new BackupLogger();
 Directory.CreateDirectory(configFolder);
-while (true)
-{
-    InitialConfig initialConfig;
-    BackupLogger backupLogger = new BackupLogger();
+BackupDataSetCollection backupDataSetCollection = new BackupDataSetCollection();
 
+//
+EnumDataBaseType databaseType;
+ConnectionParameters connectionParameters;
+EnumBackupPlans backupPlan;
+ReadOnlyDictionary<string, BackupMetrics> wrappedBackups;
+bool isAvaiable;
+//
+var gate = true;
+while (gate)
+{
+    //checks if the initial config file exists, if it does it loads the configuration from the file, if not it creates a new configuration and saves it to the file
     if (File.Exists(configFilePath))
     {
         initialConfig = backupLogger.LoadInitialConfiguration(configFilePath);
@@ -19,26 +30,39 @@ while (true)
         initialConfig = BackupInput.ConfigurationSetup(configFolder);
         backupLogger.saveInitialConfiguration(initialConfig);
     }
+
+
     var backupsPath = initialConfig.GetBackupsPath();//path to the backups directory(all backups data)
     var logsPath = initialConfig.GetLogsPath(); //path to the logs directory(all backups metadata)
+    var backupSetsPath = initialConfig.GetbackupSetsPath(); //path to the backup sets directory(all backups sets metadata)
 
     backupLogger.LoadLoggerState(logsPath);
     var loggedBackups = backupLogger.getBackupCount();
 
+    var LoadSetsAndGetCount = backupDataSetCollection.loadSets(backupSetsPath);//load the backup sets from the backup sets directory AND  returns the count of the sets loaded
+    var backupSet = backupDataSetCollection.getBackupSet();
 
-    Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL");
-    int choice;
-    bool parse = int.TryParse(Console.ReadLine(), out choice);
-    while (!parse)
+
+
+    if (backupSet == null)
     {
-        Console.WriteLine("Select a number");
-        parse = int.TryParse(Console.ReadLine(), out choice);
-
+        //user input for connection parameters and database type
+        databaseType = (EnumDataBaseType)BackupInput.GetbackupType();
+        connectionParameters = ConnectionInput.getParameters();
     }
-    EnumDataBaseType databaseType = (EnumDataBaseType)choice;
+    else
+    {
+        //if valid set was chosen , vars from it are used here.
+        databaseType = backupSet.backup.DatabaseType;
+        connectionParameters = backupSet.connectionParameters;
+    }
 
-    var connectionParameters = ConnectionInput.getParameters();
+    backupPlan = BackupInput.GetBackupStrategy();
+    wrappedBackups = backupLogger.BackupLoggerWrapped();
+    isAvaiable = backupLogger.isAvailable(connectionParameters.DatabaseName);
 
+
+    //connection test
     ConnectionStringBuilder connectionStringBuilder = new ConnectionStringBuilder(connectionParameters, databaseType);
     var connectionString = connectionStringBuilder.GetConnectionString();
     ConnectionService connectionService = new ConnectionService(connectionString);
@@ -51,11 +75,9 @@ while (true)
         connectionString = connectionStringBuilder.GetConnectionString();
         connectionService = new ConnectionService(connectionString);
         isOpen = connectionService.CheckDbConnection();
+        isAvaiable = backupLogger.isAvailable(connectionParameters.DatabaseName);
     }
 
-    var backupPlan = BackupInput.GetBackupStrategy();
-    var wrappedBackups = backupLogger.BackupLoggerWrapped();
-    var isAvaiable = backupLogger.isAvailable(connectionParameters.DatabaseName);
 
     if ((loggedBackups == 0 && (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup)) || (isAvaiable == false))
     {
@@ -64,24 +86,46 @@ while (true)
     }
 
     var baseId = "";
-    if (backupPlan == EnumBackupPlans.incrementalBackup || backupPlan == EnumBackupPlans.differentialBackup)
+    baseId = BackupInput.RequestedBackupID(wrappedBackups, backupSet, backupPlan);
+
+
+
+    //this part is where the backup plan is executed
+    var backup = BackupFactory.GetBackupPlan(backupPlan, wrappedBackups, baseId);
+    BackupMetrics backupMetrics = backup.ExecuteBackup(connectionParameters, databaseType, backupPlan, backupsPath);
+    //
+
+
+     var decision = BackupInput.AskToCreateBackupSet(backupMetrics.IsSuccess, backupPlan);
+    if (decision)
     {
-        baseId = BackupInput.RequestedBackupID(wrappedBackups);
+        var set = new BackupDataSet(connectionParameters, backupMetrics);
+        set.addIncremental($"{backupMetrics.DatabaseName}_{backupMetrics.baseId}");
+        set.addDifferental(new KeyValuePair<string, string>($"{backupMetrics.DatabaseName}_{backupMetrics.baseId}", ""));
+        backupDataSetCollection.addSet($"{backupMetrics.DatabaseName}_{backupMetrics.BackupId}", set);
+        backupDataSetCollection.saveSets(backupSetsPath);
+    }
+    else if (backupSet != null && backupPlan != EnumBackupPlans.fullBackup)
+    {
+        backupSet.setIdBasedOnType(backupPlan, backupMetrics.BackupId,backupMetrics.DatabaseName, backupSet);
+        backupDataSetCollection.updateSet(backupSet,backupPlan);
+        backupDataSetCollection.saveSets(backupSetsPath);
+
     }
 
 
-    var backup = BackupFactory.GetBackupPlan(backupPlan, wrappedBackups, baseId);
-
-
-
-    BackupMetrics backupMetrics = backup.ExecuteBackup(connectionParameters, databaseType, backupPlan, backupsPath);
 
     backupLogger.addBackupMetrics(backupMetrics, backupMetrics.BackupId);
     backupLogger.saveLoggerState(logsPath);
-
-
     Console.WriteLine("===========================================");
     Console.WriteLine($"If you want to change the paths where  program saves files, go to: {initialConfig.GetintialConfigFilePath()}, or delete the file to start new config setup");
+    Console.WriteLine("If you want to quit the application, press 'x'. Otherwise, press any key.");
+    var quit = Console.ReadKey();
+    if (quit.Key == ConsoleKey.X)
+    {
+        gate = false;
+    }
+    Console.WriteLine("");
     Console.WriteLine("===========================================");
 }
 

@@ -19,7 +19,6 @@ namespace BackupSystem
                 default:
 
                     throw new ArgumentException("invalid backup plan");
-
             }
         }
 

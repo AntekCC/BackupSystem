@@ -1,7 +1,6 @@
 ﻿using BackupSystem.Enums;
 using bckp;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace BackupSystem
 {
@@ -21,7 +20,10 @@ namespace BackupSystem
             {
                 string id = baseId.Split('_').Last();
                 backupPath = @$"{_path}\{_backupType}{_databaseType}_#{id}";
-                Directory.Delete(backupPath,true);//Very unstable method — needs improvement.
+                if (Directory.Exists(backupPath))
+                {
+                    Directory.Delete(backupPath, true);//Very unstable method — needs improvement
+                }
             }
             Process backup = new Process();
             backup.StartInfo.FileName = @"D:\bin\mariabackup.exe";

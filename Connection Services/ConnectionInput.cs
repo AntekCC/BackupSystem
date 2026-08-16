@@ -28,6 +28,13 @@ namespace BackupSystem
             string Password = Console.ReadLine();
             Console.Write("Database name: ");
             string DatabaseName = Console.ReadLine();
+
+            while (string.IsNullOrWhiteSpace(DatabaseName))
+            {
+                Console.WriteLine("Database name cannot be empty.");
+                Console.Write("Database name: ");
+                DatabaseName = Console.ReadLine();
+            }
             return new ConnectionParameters(Host, Port, User, Password, DatabaseName);
         }
     }

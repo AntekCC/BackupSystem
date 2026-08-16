@@ -10,7 +10,11 @@ namespace BackupSystem
         public static EnumBackupPlans GetBackupStrategy()
         {
             Console.WriteLine("Choose backup plan\n(1) Full backup\n(2) Incremental backup\n(3) Differential backup");
-            int choice2 = int.Parse(Console.ReadLine());
+            int choice2;
+            while (!int.TryParse(Console.ReadLine(), out choice2) || choice2 < 1 || choice2 > 3)
+            {
+                Console.WriteLine("Invalid input. Choose 1, 2 or 3:");
+            }
             EnumBackupPlans plan = (EnumBackupPlans)choice2;
             switch (plan)
             {
@@ -55,8 +59,12 @@ namespace BackupSystem
                 Console.WriteLine("No backups scheduled");
             }
         }
-        public static string RequestedBackupID(ReadOnlyDictionary<string, BackupMetrics> _wrapped)
+        public static string RequestedBackupID(ReadOnlyDictionary<string, BackupMetrics> _wrapped,BackupDataSet backupSet, EnumBackupPlans backupPlan)
         {
+            if (backupPlan == EnumBackupPlans.fullBackup) { return "";}
+            if(backupSet != null){ return backupSet.getBaseId(backupPlan);}
+
+            
             Console.WriteLine("");
             Console.WriteLine("Most recent 10  successful backups (for reference only, you can enter any ID)");
             foreach (var key in _wrapped.Reverse().Take(10))
@@ -72,8 +80,7 @@ namespace BackupSystem
             string backupId = Console.ReadLine();
             return backupId;
         }
-    
-    public static InitialConfig ConfigurationSetup(string _initialConfigFilePath)
+        public static InitialConfig ConfigurationSetup(string _initialConfigFilePath)
         {
             Console.WriteLine("=== Initial Backup Configuration ===");
             Console.WriteLine();
@@ -86,7 +93,9 @@ namespace BackupSystem
 
             Console.Write("Enter logs directory path: ");
             string logsPath = Console.ReadLine();
-            if (Directory.Exists(logsPath) && Directory.Exists(_initialConfigFilePath) && Directory.Exists(backupsPath)) { return new InitialConfig(_initialConfigFilePath, backupsPath, logsPath); }
+            Console.Write("Enter backupSetsPath directory path: ");
+            string backupSetsPath = Console.ReadLine();
+            if (Directory.Exists(logsPath) && Directory.Exists(_initialConfigFilePath) && Directory.Exists(backupsPath) && Directory.Exists(backupSetsPath)) { return new InitialConfig(_initialConfigFilePath, backupsPath, logsPath,backupSetsPath); }
             else
             {
                 Console.WriteLine("One or more of the provided paths do not exist. Please ensure that the paths are correct and try again.");
@@ -94,10 +103,47 @@ namespace BackupSystem
             }
             return null;
         }
+        public static bool AskToCreateBackupSet(bool wasBackupSuccessful, EnumBackupPlans wasFullBackup)
+        {
+            if (wasBackupSuccessful && wasFullBackup == EnumBackupPlans.fullBackup)
+            {
+                Console.WriteLine("Do you want to create a backup set?");
+                Console.WriteLine("(1) Yes");
+                Console.WriteLine("(2) No");
+
+                while (true)
+                {
+                    Console.Write("Choose an option: ");
+                    string? input = Console.ReadLine();
+
+                    if (input == "1")
+                        return true;
+
+                    if (input == "2")
+                        return false;
+
+                    Console.WriteLine("Invalid input. Please enter 1 or 2.");
+                }
+            }
+            return false;
+
+        }
+        public static int GetbackupType()
+        {
+            Console.WriteLine("Select database type for backup:\n(1)MariaDB\n(2)PostgreSQL");
+            int choice;
+            bool parse = int.TryParse(Console.ReadLine(), out choice);
+            while (!parse)
+            {
+                Console.WriteLine("Select a number");
+                parse = int.TryParse(Console.ReadLine(), out choice);
+
+            }
+            return choice;
+        }
     }
 
 }
-
 
 
 
